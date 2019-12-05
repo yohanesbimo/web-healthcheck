@@ -1,0 +1,64 @@
+<html>
+    <head><title>Web Healthcheck</title></head>
+    <body>
+        <center>
+            <table border="0">
+                <tr>
+                    <td>Check</td>
+                    <td><input type="text" id="url" /></td>
+                    <td><input type="button" id="check" value="Go" /></td>
+                </tr>
+            </table>
+            <table border="0">
+                <thead>
+                    <th>No.</th>
+                    <th>URL</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </thead>
+                <tbody id="table"></tbody>
+            </table>
+        </center>
+    </body>
+    <style>
+        body {
+            background-color: #d0deed;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+        var i = 1;
+        
+        function getHealthcheckStatus(checkURL, position, interval) {
+            $.ajax({
+                async: true,
+                type: 'GET',
+                contentType: "application/x-www-form-urlencoded",
+                data: {'url': checkURL},
+                url: 'http://localhost:8080/web-healthcheck',
+                dataType: 'json',
+                success: function(data) {
+                    if ($("#url-" + position).html() == "" || $("#url-" + position).html() == undefined) {
+                        $('#table').append('<tr id="url-' + position + '"><td>' + position + '</td><td>' + checkURL + '</td><td class="status">' + data.status + '</td><td><button onClick="stopGETHealthcheckStatus(' + position + ')">Stop</button></td></tr>');
+                    } else {
+                        $("#url-" + i + " > .status").html(data.status);
+                    }
+                }
+            });
+        }
+        function stopGETHealthcheckStatus(idx) {
+            clearInterval(idx);
+            $("#url-" + idx).remove();
+        }
+        $("#check").click(function(e){
+            e.preventDefault();
+
+            url = $("#url").val();
+            
+            setInterval(function(u, p) {
+                getHealthcheckStatus(u, p);
+            }, 5000, (url), (i));
+            i++;
+        });
+    </script>
+</html>
